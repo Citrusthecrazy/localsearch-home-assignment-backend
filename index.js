@@ -33,7 +33,6 @@ app.get("/business/:id", async (req, res) => {
           JSON.stringify(opening_hours.days[currItem])
         ) {
           days.push(currItem);
-          console.log();
           if (!alreadyContainsHours(hours, opening_hours.days[currItem])) {
             hours.push(opening_hours.days[currItem]);
           }
