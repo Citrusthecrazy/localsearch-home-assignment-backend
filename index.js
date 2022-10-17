@@ -43,8 +43,10 @@ app.get("/business/:id", async (req, res) => {
       items.push({ daysInTheWeek: days, workingHours: hours.slice(1) });
     });
     let isOpen = getIsCurrentyOpen(opening_hours);
-    console.log(isOpen);
+    let nextOpenClose = getNextOpenClose(isOpen, opening_hours);
+
     res.json({
+      nextOpenClose,
       isOpenNow: isOpen,
       displayed_what,
       displayed_where,
@@ -58,6 +60,27 @@ app.get("/business/:id", async (req, res) => {
 app.listen(port, () => {
   console.log(`App listening on port: ${port}`);
 });
+
+const getNextOpenClose = (isOpen, opening_hours) => {
+  if (!isOpen) return "";
+
+  const currentHour = new Date().getHours();
+  if (currentHour < 10) {
+    currentHour = `0${currentHour}`;
+  }
+  const currentMinute = new Date().getMinutes();
+  if (currentMinute < 10) {
+    currentMinute = `0${currentMinute}`;
+  }
+  const currentTime = `${currentHour}:${currentMinute}`;
+  const todaysDay = new Date().getDay();
+  const dayString = daysInAWeek[todaysDay];
+
+  const dayArray = opening_hours.days[dayString];
+
+  const day = dayArray.find((timeSpan) => timeSpan.start <= currentTime);
+  return `${dayString} in ${day.end}`;
+};
 
 const getIsCurrentyOpen = (opening_hours) => {
   let isOpen = false;
