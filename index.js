@@ -16,6 +16,7 @@ app.get("/business/:id", async (req, res) => {
 
     keys = Object.keys(opening_hours.days);
     let items = []; // { daysInTheWeek:[],workingHours;[]}
+
     keys.forEach((item) => {
       let days = [];
       let hours = [];
@@ -41,8 +42,10 @@ app.get("/business/:id", async (req, res) => {
 
       items.push({ daysInTheWeek: days, workingHours: hours.slice(1) });
     });
-
+    let isOpen = getIsCurrentyOpen(opening_hours);
+    console.log(isOpen);
     res.json({
+      isOpenNow: isOpen,
       displayed_what,
       displayed_where,
       opening_hours: items,
@@ -55,6 +58,38 @@ app.get("/business/:id", async (req, res) => {
 app.listen(port, () => {
   console.log(`App listening on port: ${port}`);
 });
+
+const getIsCurrentyOpen = (opening_hours) => {
+  let isOpen = false;
+  const mockDate = new Date();
+  mockDate.setHours(11, 40);
+  const currentHour = mockDate.getHours();
+  if (currentHour < 10) {
+    currentHour = `0${currentHour}`;
+  }
+  const currentMinute = mockDate.getMinutes();
+  if (currentMinute < 10) {
+    currentMinute = `0${currentMinute}`;
+  }
+  const currentTime = `${currentHour}:${currentMinute}`;
+  const todaysDay = mockDate.getDay();
+  const dayString = daysInAWeek[todaysDay];
+  const dayArray = opening_hours.days[dayString];
+
+  // dayArray.forEach((timeSpan) => {
+  //   if (isOpen) return;
+  //   if (currentTime >= timeSpan.start && currentTime < timeSpan.end) {
+  //     isOpen = true;
+  //     return;
+  //   }
+  // });
+
+  isOpen = dayArray.some(
+    (timeSpan) => currentTime >= timeSpan.start && currentTime < timeSpan.end
+  );
+
+  return isOpen;
+};
 
 const alreadyContainsDay = (array, item) => {
   let contains = false;
@@ -81,3 +116,13 @@ const alreadyContainsHours = (array, item) => {
   }
   return contains;
 };
+
+const daysInAWeek = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
